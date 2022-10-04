@@ -44,7 +44,9 @@ class Forgotpassword extends StatelessWidget {
                 alignment: Alignment.center,
                 margin: const EdgeInsets.only(left: 20, right: 20),
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).pushNamed('verification');
+                  },
                   style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.0))),

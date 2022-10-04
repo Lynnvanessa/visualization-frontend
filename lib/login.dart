@@ -66,7 +66,9 @@ class Login extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 30, bottom: 30),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).pushNamed('details');
+                },
                 child: Container(
                     width: double.infinity,
                     alignment: Alignment.center,
