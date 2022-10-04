@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:visualization/structure/code_input.dart';
 
 class Verification extends StatelessWidget {
   const Verification({Key? key}) : super(key: key);
@@ -22,7 +23,32 @@ class Verification extends StatelessWidget {
                 'Verification Code',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 32),
               ),
-            )
+            ),
+            Wrap(
+              spacing: 20,
+              children: const [
+                CodeInput(),
+                CodeInput(),
+                CodeInput(),
+                CodeInput()
+              ],
+            ),
+            Container(
+              alignment: Alignment.center,
+              margin: const EdgeInsets.only(top: 30),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacementNamed('resetpassword');
+                },
+                style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0))),
+                child: Container(
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    child: const Text('Verifying')),
+              ),
+            ),
           ],
         ),
       ),

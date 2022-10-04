@@ -51,7 +51,9 @@ class Resetpassword extends StatelessWidget {
                 alignment: Alignment.center,
                 margin: const EdgeInsets.only(left: 20, bottom: 20, top: 30),
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
                   style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.0))),
