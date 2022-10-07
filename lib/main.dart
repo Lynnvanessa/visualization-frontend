@@ -7,6 +7,7 @@ import 'package:visualization/resetpassword.dart';
 import 'package:visualization/signup.dart';
 import 'package:visualization/structure/code_input.dart';
 import 'package:visualization/verification.dart';
+import 'package:visualization/visualization.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
         'details': (context) => const Details(),
         'verification': (context) => const Verification(),
         'vcode': (context) => const CodeInput(),
+        'visualization': (context) => const Visualization(),
       },
       title: 'Flutter Demo',
       theme: ThemeData(primarySwatch: Colors.blue),

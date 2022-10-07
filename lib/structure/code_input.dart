@@ -23,7 +23,8 @@ class CodeInput extends StatelessWidget {
             borderSide: BorderSide(color: AppColors.lightgrey),
           ),
           focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.lightgrey)),
+            borderSide: BorderSide(color: AppColors.lightgrey),
+          ),
           border: OutlineInputBorder(
             borderSide: BorderSide(color: AppColors.lightgrey),
           ),

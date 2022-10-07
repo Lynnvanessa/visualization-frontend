@@ -84,7 +84,9 @@ class Signup extends StatelessWidget {
                   margin: const EdgeInsets.only(left: 20, right: 20),
                   alignment: Alignment.center,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).pushReplacementNamed('details');
+                    },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0),
@@ -110,7 +112,10 @@ class Signup extends StatelessWidget {
                         text: 'Login',
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, color: Colors.blue),
-                        recognizer: TapGestureRecognizer()..onTap = () {},
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.of(context).pushReplacementNamed('login');
+                          },
                       ),
                     ])),
               )

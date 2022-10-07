@@ -56,7 +56,7 @@ class Login extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pushNamed('forgotpassword');
+                Navigator.of(context).pushNamed('verification');
               },
               child: Container(
                   width: double.infinity,
@@ -67,7 +67,7 @@ class Login extends StatelessWidget {
               padding: const EdgeInsets.only(top: 30, bottom: 30),
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamed('details');
+                  Navigator.of(context).pushNamed('visualization');
                 },
                 child: Container(
                     width: double.infinity,
