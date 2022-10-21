@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:visualization/theme/colors.dart';
 
 class Details extends StatefulWidget {
@@ -51,7 +52,7 @@ class _DetailsState extends State<Details> {
       drawer: Drawer(
         child: ListView(padding: EdgeInsets.zero, children: [
           Container(
-            margin: const EdgeInsets.only(top: 40),
+            margin: const EdgeInsets.only(top: 40, bottom: 20),
             child: ListTile(
               title: const Text(
                 'Profile',
@@ -60,12 +61,24 @@ class _DetailsState extends State<Details> {
               onTap: () {},
             ),
           ),
+          Container(
+            margin: const EdgeInsets.only(bottom: 20),
+            child: ListTile(
+              title: const Text(
+                'Upload',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+              onTap: () {},
+            ),
+          ),
           ListTile(
             title: const Text(
-              'Upload',
+              'Logout',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pushReplacementNamed('login');
+            },
           )
         ]),
       ),
@@ -107,5 +120,11 @@ class _DetailsState extends State<Details> {
         ),
       ),
     );
+  }
+
+  void Logout() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.remove('access');
   }
 }

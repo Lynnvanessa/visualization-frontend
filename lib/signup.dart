@@ -4,6 +4,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:visualization/utils/conts.dart';
 
 class Signup extends StatefulWidget {
@@ -20,6 +21,7 @@ class _SignupState extends State<Signup> {
   var firstname = '';
   var password = '';
   var confirmpassword = '';
+  var access = "";
   var loading = false;
   Map<String, dynamic> errors = {};
   final formState = GlobalKey<FormState>();
@@ -236,7 +238,10 @@ class _SignupState extends State<Signup> {
       print(response.body);
       if (response.statusCode == 200) {
         // save token
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('access', access);
         // redirect to main screen
+        Navigator.of(context).pushReplacementNamed('details');
       } else if (response.statusCode == 400) {
         //read error and display
         setState(() {

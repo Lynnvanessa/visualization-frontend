@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'utils/conts.dart';
 
@@ -16,6 +17,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   var email = "";
   var password = "";
+  var access = "";
   var loading = false;
   Map<String, dynamic> errors = {};
   final formState = GlobalKey<FormState>();
@@ -174,6 +176,10 @@ class _LoginState extends State<Login> {
       if (response.statusCode == 200) {
         // save token
         // redirect to main screen
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('access', access);
+        // ignore: use_build_context_synchronously
+        Navigator.of(context).pushReplacementNamed('details');
       } else {
         //read error and display
         setState(() {
