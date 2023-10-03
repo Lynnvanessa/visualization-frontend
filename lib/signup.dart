@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:email_validator/email_validator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -170,7 +171,6 @@ class _SignupState extends State<Signup> {
                           ? null
                           : () {
                               signUp();
-                              // Navigator.of(context).pushReplacementNamed('details');
                             },
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -221,36 +221,18 @@ class _SignupState extends State<Signup> {
       loading = true;
       errors = {};
     });
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/register/'),
-        headers: {
-          "content-type": "application/json",
-        },
-        body: jsonEncode({
-          "email": email,
-          "first_name": firstname,
-          "last_name": last_name,
-          "password": password,
-          "conf_password": confirmpassword,
-        }),
-      );
-      print(response.body);
-      if (response.statusCode == 200) {
-        // save token
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('access', access);
-        // redirect to main screen
-        Navigator.of(context).pushReplacementNamed('details');
-      } else if (response.statusCode == 400) {
-        //read error and display
-        setState(() {
-          errors = jsonDecode(response.body);
-        });
-      }
-    } catch (e) {
+
+    FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: password)
+        .then((value) {
+      print(value);
+      Navigator.of(context).pushReplacementNamed('feed');
+    }).catchError((e) {
       print(e);
-    }
+      setState(() {
+        loading = false;
+      });
+    });
     setState(() {
       loading = false;
     });

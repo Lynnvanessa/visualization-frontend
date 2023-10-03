@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -106,7 +107,7 @@ class _LoginState extends State<Login> {
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamed('verification');
+                  Navigator.of(context).pushNamed('forgotpassword');
                 },
                 child: Container(
                     width: double.infinity,
@@ -166,32 +167,17 @@ class _LoginState extends State<Login> {
     setState(() {
       loading = true;
     });
-    try {
-      final response = await http.post(Uri.parse('$baseUrl/login/'),
-          headers: {
-            "content-type": "application/json",
-          },
-          body: jsonEncode({"email": email, "password": password}));
-      print(response.body);
-      if (response.statusCode == 200) {
-        // save token
-        // redirect to main screen
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('access', access);
-        // ignore: use_build_context_synchronously
-        Navigator.of(context).pushReplacementNamed('details');
-      } else {
-        //read error and display
-        setState(() {
-          errors = jsonDecode(response.body);
-          print(errors);
-        });
-      }
-    } catch (e) {
+    FirebaseAuth.instance
+        .signInWithEmailAndPassword(email: email, password: password)
+        .then((value) {
+      Navigator.of(context).pushReplacementNamed('feed');
+    })
+        .catchError((e) {
       print(e);
-    }
-    setState(() {
-      loading = false;
+      setState(() {
+        loading = false;
+        errors = {"detail": "Invalid email or password"};
+      });
     });
   }
 }

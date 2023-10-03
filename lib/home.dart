@@ -35,11 +35,13 @@ class Home extends StatelessWidget {
                 child: Container(
                   alignment: Alignment.center,
                   child: const Text(
-                    'CANCER SUMMARY',
+                    '"You can be a victim of cancer or a survivor of cancer. It\'s a mindset."',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        fontSize: 32),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      fontSize: 32,
+                    ),
                   ),
                 ),
               ),

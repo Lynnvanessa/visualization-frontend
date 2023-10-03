@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../theme/colors.dart';
 
-void main() => runApp(const Select());
-
 const List<String> list = <String>['One', 'Two', 'Three', 'Four'];
 
 class Select extends StatefulWidget {
@@ -20,7 +18,6 @@ class _SelectState extends State<Select> {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(left: 10, right: 10),
-      width: 150,
       alignment: Alignment.topRight,
       decoration: const BoxDecoration(
           shape: BoxShape.rectangle, color: AppColors.lightgrey),
