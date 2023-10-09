@@ -46,18 +46,6 @@ class Home extends StatelessWidget {
                 ),
               ),
               Container(
-                alignment: Alignment.centerRight,
-                margin: const EdgeInsets.only(right: 10),
-                child: TextButton(
-                  onPressed: () {},
-                  child: const Text(
-                    'Next',
-                    style: TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-              Container(
                 margin: const EdgeInsets.only(bottom: 40),
                 child: BoxButton(
                     text: 'Get Started',

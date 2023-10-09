@@ -28,9 +28,26 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        leading: GestureDetector(
+          onTap: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.of(context).pushReplacementNamed('login');
+            }
+          },
+          child: const Icon(
+            Icons.arrow_back,
+            color: Colors.black,
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
           child: Form(
             key: formState,
             child: Column(

@@ -1,12 +1,7 @@
-import 'dart:convert';
-
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:visualization/utils/conts.dart';
 
 class Signup extends StatefulWidget {
   const Signup({Key? key}) : super(key: key);
@@ -26,13 +21,32 @@ class _SignupState extends State<Signup> {
   var loading = false;
   Map<String, dynamic> errors = {};
   final formState = GlobalKey<FormState>();
+  var obscurePass = true;
+  var obscureConfirmPass = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        leading: GestureDetector(
+          onTap: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.of(context).pushReplacementNamed('login');
+            }
+          },
+          child: const Icon(
+            Icons.arrow_back,
+            color: Colors.black,
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
           child: Form(
             key: formState,
             child: Column(
@@ -134,8 +148,21 @@ class _SignupState extends State<Signup> {
                           color: Colors.black,
                         ),
                         border: const OutlineInputBorder(),
-                        hintText: 'Password'),
-                    obscureText: true,
+                        hintText: 'Password',
+                        suffixIcon: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              obscurePass = !obscurePass;
+                            });
+                          },
+                          child: Icon(
+                            obscurePass
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: Colors.black,
+                          ),
+                        )),
+                    obscureText: obscurePass,
                   ),
                 ),
                 TextFormField(
@@ -158,8 +185,21 @@ class _SignupState extends State<Signup> {
                         color: Colors.black,
                       ),
                       border: const OutlineInputBorder(),
-                      hintText: 'Confirm password'),
-                  obscureText: true,
+                      hintText: 'Confirm password',
+                      suffixIcon: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            obscureConfirmPass = !obscureConfirmPass;
+                          });
+                        },
+                        child: Icon(
+                          obscureConfirmPass
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: Colors.black,
+                        ),
+                      )),
+                  obscureText: obscureConfirmPass,
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 15, bottom: 15),

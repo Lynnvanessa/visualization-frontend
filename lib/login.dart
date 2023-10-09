@@ -1,12 +1,6 @@
-import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'utils/conts.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -22,6 +16,7 @@ class _LoginState extends State<Login> {
   var loading = false;
   Map<String, dynamic> errors = {};
   final formState = GlobalKey<FormState>();
+  var obscurePass = true;
 
   @override
   Widget build(BuildContext context) {
@@ -74,13 +69,14 @@ class _LoginState extends State<Login> {
                   return null;
                 },
                 decoration: InputDecoration(
-                    errorText: errors["email"]?.join(","),
-                    icon: const Icon(
-                      Icons.mail,
-                      color: Colors.black,
-                    ),
-                    border: const OutlineInputBorder(),
-                    hintText: 'Email'),
+                  errorText: errors["email"]?.join(","),
+                  icon: const Icon(
+                    Icons.mail,
+                    color: Colors.black,
+                  ),
+                  border: const OutlineInputBorder(),
+                  hintText: 'Email',
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 40, bottom: 40),
@@ -101,8 +97,19 @@ class _LoginState extends State<Login> {
                         color: Colors.black,
                       ),
                       border: const OutlineInputBorder(),
-                      hintText: 'Password'),
-                  obscureText: true,
+                      hintText: 'Password',
+                      suffixIcon: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            obscurePass = !obscurePass;
+                          });
+                        },
+                        child: Icon(
+                          obscurePass ? Icons.visibility : Icons.visibility_off,
+                          color: Colors.black,
+                        ),
+                      )),
+                  obscureText: obscurePass,
                 ),
               ),
               TextButton(
@@ -171,8 +178,7 @@ class _LoginState extends State<Login> {
         .signInWithEmailAndPassword(email: email, password: password)
         .then((value) {
       Navigator.of(context).pushReplacementNamed('feed');
-    })
-        .catchError((e) {
+    }).catchError((e) {
       print(e);
       setState(() {
         loading = false;
