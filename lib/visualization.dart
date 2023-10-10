@@ -23,6 +23,7 @@ enum VisualizationType {
 
 @pragma("vm:entry-point")
 void getDoubleVariableSummary(SendPort sendPort) async {
+  print("running getDoubleVariableSummary");
   try {
     sendPort.send("Analyzing data...");
 
@@ -68,9 +69,15 @@ void getDoubleVariableSummary(SendPort sendPort) async {
 
     sendPort.send(
       {
-        "summary": summary,
         "type": "error",
         "message": "Working on it...",
+      },
+    );
+
+    sendPort.send(
+      {
+        "summary": summary,
+        "type": "data",
       },
     );
 
@@ -87,6 +94,8 @@ void getDoubleVariableSummary(SendPort sendPort) async {
 
 @pragma("vm:entry-point")
 void getSingleVariableSummary(SendPort sendPort) async {
+  print("running getSingleVariableSummary");
+
   try {
     sendPort.send("Analyzing data...");
 
@@ -246,7 +255,7 @@ class _VisualizationState extends State<Visualization> {
   Map<String, dynamic>? loadFileResult;
 
   //visualization
-  List<Map<String?, int>> summaries = [];
+  dynamic summaries = [];
   bool visualizationLoading = false;
   String? visualizationError;
   String? visualizationMessage;
@@ -308,6 +317,7 @@ class _VisualizationState extends State<Visualization> {
     }
 
     if (loadFileResult == null) {
+      _initialize();
       return;
     }
 
@@ -340,33 +350,21 @@ class _VisualizationState extends State<Visualization> {
     });
 
     setState(() {
+      summaries = [];
       visualizationLoading = true;
     });
 
-    if (visualizationType == VisualizationType.barChart ||
-        visualizationType == VisualizationType.barChart) {
-      if (column1 == null || column2 == null) {
-        FlutterIsolate.spawn(
-          getSingleVariableSummary,
-          receivePort.sendPort,
-        );
-      } else {
-        FlutterIsolate.spawn(
-          getDoubleVariableSummary,
-          receivePort.sendPort,
-        );
-      }
-    } else {
+    if (column1 == null || column2 == null) {
       FlutterIsolate.spawn(
         getSingleVariableSummary,
         receivePort.sendPort,
       );
+    } else {
+      FlutterIsolate.spawn(
+        getDoubleVariableSummary,
+        receivePort.sendPort,
+      );
     }
-
-    FlutterIsolate.spawn(
-      getSingleVariableSummary,
-      receivePort.sendPort,
-    );
   }
 
   void _onChangeVisualizationType(VisualizationType? newValue) {
@@ -379,7 +377,6 @@ class _VisualizationState extends State<Visualization> {
   void _onChangeVariable1(String? newValue) {
     setState(() {
       variable1 = newValue;
-      visualizationType = null;
       _onChange();
     });
   }
@@ -387,17 +384,12 @@ class _VisualizationState extends State<Visualization> {
   void _onChangeVariable2(String? newValue) {
     setState(() {
       variable2 = newValue;
-      visualizationType = null;
       _onChange();
     });
   }
 
   void _onChange() {
-    if (visualizationType == null) {
-      return;
-    }
-
-    if (variable1 == null && variable2 == null) {
+    if (visualizationType == null || (variable1 == null && variable2 == null)) {
       return;
     }
 
@@ -716,7 +708,8 @@ class _VisualizationState extends State<Visualization> {
                                         );
                                       }
 
-                                      if (summaries.isEmpty) {
+                                      if (summaries.isEmpty &&
+                                          !visualizationLoading) {
                                         return const Center(
                                           child: Text('No data'),
                                         );
@@ -725,10 +718,10 @@ class _VisualizationState extends State<Visualization> {
                                       return Column(
                                         children: [
                                           const SizedBox(
-                                              height: 24,
-                                              width: 24,
-                                              child:
-                                                  CircularProgressIndicator()),
+                                            height: 24,
+                                            width: 24,
+                                            child: CircularProgressIndicator(),
+                                          ),
                                           Container(
                                             margin: const EdgeInsets.only(
                                                 top: 10, left: 16, right: 16),
@@ -743,31 +736,16 @@ class _VisualizationState extends State<Visualization> {
                                         ],
                                       );
                                     }),
-                                    child: Column(
-                                      children: [
-                                        if (visualizationType ==
-                                            VisualizationType.barChart)
-                                          SFBarChart(
+                                    child: visualizationType != null &&
+                                            summaries.isNotEmpty
+                                        ? VisualizationWidget(
+                                            summaries: summaries,
+                                            visualizationType:
+                                                visualizationType!,
                                             variable1: variable1,
                                             variable2: variable2,
-                                            summaries: summaries,
-                                          ),
-                                        if (visualizationType ==
-                                            VisualizationType.pieChart)
-                                          FLPieChart(
-                                            variable1: variable1,
-                                            variable2: variable2,
-                                            summaries: summaries,
-                                          ),
-                                        if (visualizationType ==
-                                            VisualizationType.lineChart)
-                                          LineChart(
-                                            variable1: variable1,
-                                            variable2: variable2,
-                                            summaries: summaries,
-                                          ),
-                                      ],
-                                    ),
+                                          )
+                                        : const SizedBox(),
                                   ),
                                 ),
                               ),
@@ -831,7 +809,7 @@ class FLPieChart extends StatefulWidget {
 
   final String? variable1;
   final String? variable2;
-  final List<Map<String?, int>> summaries;
+  final List<dynamic> summaries;
 
   @override
   State<FLPieChart> createState() => _FLPieChartState();
@@ -922,7 +900,7 @@ class _FLPieChartState extends State<FLPieChart> {
     var total = 0;
     for (var i = 0; i < widget.summaries.first.length; i++) {
       final value = widget.summaries.first.values.toList()[i];
-      total += value;
+      total += (value as int);
     }
 
     return List.generate(widget.summaries.first.length, (i) {
@@ -947,79 +925,6 @@ class _FLPieChartState extends State<FLPieChart> {
     });
   }
 }
-
-// class FLBarChart extends StatelessWidget {
-//   const FLBarChart({
-//     super.key,
-//     this.variable1,
-//     this.variable2,
-//     required this.summaries,
-//   });
-
-//   final String? variable1;
-//   final String? variable2;
-//   final List<Map<String?, int>> summaries;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return SizedBox(
-//       height: 250,
-//       child: BarChart(
-//         BarChartData(
-//           alignment: BarChartAlignment.spaceAround,
-//           barTouchData: BarTouchData(
-//             enabled: false,
-//           ),
-//           titlesData: FlTitlesData(
-//               show: true,
-//               bottomTitles: AxisTitles(
-//                 axisNameWidget: Text(
-//                   variable1 ?? variable2 ?? "",
-//                   style: const TextStyle(
-//                     fontSize: 16,
-//                     fontWeight: FontWeight.w600,
-//                   ),
-//                 ),
-//               ),
-//               leftTitles: const AxisTitles(
-//                 axisNameWidget: Text(
-//                   "Count",
-//                   style: TextStyle(
-//                     fontSize: 16,
-//                     fontWeight: FontWeight.w600,
-//                   ),
-//                 ),
-//               )),
-//           gridData: FlGridData(
-//             show: true,
-//             checkToShowHorizontalLine: (value) => value % 5 == 0,
-//             getDrawingHorizontalLine: (value) => const FlLine(
-//               color: Color(0xff37434d),
-//               strokeWidth: 1,
-//               dashArray: [5],
-//             ),
-//           ),
-//           borderData: FlBorderData(
-//             show: false,
-//           ),
-//           barGroups: summaries.first.entries
-//               .map(
-//                 (e) => BarChartGroupData(
-//                   x: summaries.first.keys.toList().indexOf(e.key),
-//                   barRods: [
-//                     BarChartRodData(
-//                       toY: e.value.toDouble(),
-//                       color: Colors.lightBlueAccent,
-//                     ),
-//                   ],
-//                 ),
-//               )
-//               .toList(),
-//         ),
-//       ),
-//     );
-//   }
-// }
 
 class CommentListWidget extends StatefulWidget {
   const CommentListWidget({
@@ -1222,76 +1127,55 @@ class SFBarChart extends StatelessWidget {
     this.variable1,
     this.variable2,
     required this.summaries,
+    this.xTitle,
   });
 
   final String? variable1;
   final String? variable2;
-  final List<Map<String?, int>> summaries;
+  final List<dynamic> summaries;
+  final String? xTitle;
 
   @override
   Widget build(BuildContext context) {
-    return SfCartesianChart(
-      primaryXAxis: CategoryAxis(
-        title: AxisTitle(
-          text: variable1 ?? variable2 ?? "",
+    if (summaries.isEmpty) {
+      return const SizedBox();
+    }
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SfCartesianChart(
+        primaryXAxis: CategoryAxis(
+          labelRotation: 90,
+          title: AxisTitle(
+            text: (xTitle ?? variable1 ?? variable2 ?? "").replaceAll("_", ""),
+          ),
         ),
-      ),
-      primaryYAxis: NumericAxis(
-        minimum: 0,
-        title: AxisTitle(
-          text: "Count",
+        primaryYAxis: NumericAxis(
+          minimum: 0,
+          title: AxisTitle(
+            text: "Count",
+          ),
         ),
+        series: <ChartSeries>[
+          ColumnSeries<dynamic, String?>(
+            dataSource: summaries.first.entries
+                .map((e) => {
+                      e.key: e.value,
+                    })
+                .toList(),
+            xValueMapper: (dynamic data, _) {
+              var value = data.keys.first;
+              if (value.length > 10) {
+                value = value.substring(0, 7) + "...";
+              }
+              return value;
+            },
+            yValueMapper: (dynamic data, _) => data.values.first,
+          )
+        ],
       ),
-      series: <ChartSeries>[
-        ColumnSeries<Map<String?, int>, String?>(
-          dataSource: summaries.first.entries
-              .map((e) => {
-                    e.key: e.value,
-                  })
-              .toList(),
-          xValueMapper: (Map<String?, int> data, _) => data.keys.first,
-          yValueMapper: (Map<String?, int> data, _) => data.values.first,
-        )
-      ],
     );
   }
 }
-
-// class PieChart extends StatelessWidget {
-//   const PieChart({
-//     super.key,
-//     this.variable1,
-//     this.variable2,
-//     required this.summaries,
-//   });
-
-//   final String? variable1;
-//   final String? variable2;
-//   final List<Map<String?, int>> summaries;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return SfCircularChart(
-//       series: <CircularSeries>[
-//         PieSeries<Map<String?, int>, String?>(
-//           dataSource: summaries.first.entries
-//               .map((e) => {
-//                     e.key ?? "": e.value,
-//                   })
-//               .toList(),
-//           xValueMapper: (Map<String?, int> data, _) => data.keys.first,
-//           yValueMapper: (Map<String?, int> data, _) => data.values.first,
-//           dataLabelMapper: (Map<String?, int> data, _) =>
-//               "${data.keys.first} (${data.values.first})",
-//           dataLabelSettings: const DataLabelSettings(
-//             isVisible: true,
-//             overflowMode: OverflowMode.shift,
-//           ),
-//         )
-//       ],
-//     );
-//   }
-// }
 
 class LineChart extends StatelessWidget {
   const LineChart({
@@ -1303,10 +1187,14 @@ class LineChart extends StatelessWidget {
 
   final String? variable1;
   final String? variable2;
-  final List<Map<String?, int>> summaries;
+  final List<dynamic> summaries;
 
   @override
   Widget build(BuildContext context) {
+    if (summaries.isEmpty) {
+      return const SizedBox();
+    }
+
     return SfCartesianChart(
       primaryXAxis: CategoryAxis(
         title: AxisTitle(
@@ -1318,17 +1206,292 @@ class LineChart extends StatelessWidget {
       ),
       series: summaries
           .map(
-            (e) => LineSeries<Map<String?, int>, String?>(
-              dataSource: e.entries
+            (e) => LineSeries<dynamic, String?>(
+              dataSource: (e?.entries ?? [])
                   .map((e) => {
                         e.key ?? "": e.value,
                       })
                   .toList(),
-              xValueMapper: (Map<String?, int> data, _) => data.keys.first,
-              yValueMapper: (Map<String?, int> data, _) => data.values.first,
+              xValueMapper: (dynamic data, _) => data.keys.first,
+              yValueMapper: (dynamic data, _) => data.values.first,
             ),
           )
           .toList(),
+    );
+  }
+}
+
+class FLMultiBarChart extends StatefulWidget {
+  const FLMultiBarChart(
+      {super.key,
+      required this.variable1,
+      required this.variable2,
+      required this.summaries});
+
+  final String variable1;
+  final String variable2;
+  final List<dynamic> summaries;
+
+  @override
+  State<FLMultiBarChart> createState() => _FLMultiBarChartState();
+}
+
+class _FLMultiBarChartState extends State<FLMultiBarChart> {
+  Map<String?, Color> colors = {};
+
+  final betweenSpace = 0.2;
+
+  BarChartGroupData generateGroupData(int x, dynamic summary) {
+    var y = 0.0;
+    return BarChartGroupData(
+      x: x,
+      groupVertically: true,
+      barRods: [
+        ...((summary as Map<String?, int>?)?.entries ?? []).map(
+          (e) {
+            final tempY = y;
+            y += e.value + betweenSpace;
+
+            Color color;
+            if (colors.containsKey(e.key)) {
+              color = colors[e.key]!;
+            } else {
+              color = Colors.primaries[colors.length % Colors.primaries.length];
+              setState(() {
+                colors[e.key] = color;
+              });
+            }
+
+            return BarChartRodData(
+              fromY: tempY,
+              toY: y,
+              color: color,
+              width: 5,
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget bottomTitles(double value, TitleMeta meta) {
+    const style = TextStyle(fontSize: 10);
+    final keys = <String>[];
+    (widget.summaries.first?.entries ?? []).forEach((element) {
+      keys.add(element.key!);
+    });
+
+    final index = value.toInt();
+    String text;
+    if (index >= keys.length) {
+      text = "";
+    } else {
+      text = keys[index];
+    }
+
+    return SideTitleWidget(
+      axisSide: meta.axisSide,
+      child: Text(text, style: style),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "${widget.variable1.replaceAll("_", " ")} vs ${widget.variable2.replaceAll("_", " ")}",
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          // legends
+          Wrap(
+            alignment: WrapAlignment.center,
+            direction: Axis.horizontal,
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              ...colors
+                  .map((title, color) {
+                    return MapEntry(
+                      title,
+                      Wrap(
+                        direction: Axis.horizontal,
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          AnimatedContainer(
+                            width: 20,
+                            height: 20,
+                            color: color,
+                            duration: const Duration(milliseconds: 300),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.only(left: 5),
+                            child: Text(title!),
+                          ),
+                        ],
+                      ),
+                    );
+                  })
+                  .values
+                  .toList()
+            ],
+          ),
+          const SizedBox(height: 14),
+          AspectRatio(
+            aspectRatio: 2,
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceBetween,
+                titlesData: FlTitlesData(
+                  leftTitles: const AxisTitles(),
+                  rightTitles: const AxisTitles(),
+                  topTitles: const AxisTitles(),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: bottomTitles,
+                      reservedSize: 20,
+                    ),
+                  ),
+                ),
+                barTouchData: BarTouchData(enabled: false),
+                borderData: FlBorderData(show: false),
+                gridData: const FlGridData(show: false),
+                barGroups:
+                    (widget.summaries.first as Map<String?, Map<String?, int>>)
+                        .keys
+                        .map((e) {
+                  final index = (widget.summaries.first
+                          as Map<String?, Map<String?, int>>)
+                      .keys
+                      .toList()
+                      .indexOf(e);
+                  return generateGroupData(
+                      index,
+                      (widget.summaries.first
+                          as Map<String?, Map<String?, int>>)[e]);
+                }).toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class VisualizationWidget extends StatefulWidget {
+  const VisualizationWidget({
+    super.key,
+    required this.variable1,
+    required this.variable2,
+    this.visualizationType,
+    required this.summaries,
+  });
+
+  final String? variable1;
+  final String? variable2;
+  final VisualizationType? visualizationType;
+  final List<dynamic> summaries;
+
+  @override
+  State<VisualizationWidget> createState() => _VisualizationWidgetState();
+}
+
+class _VisualizationWidgetState extends State<VisualizationWidget> {
+  List<String?> keys = [];
+  String? key;
+
+  @override
+  initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      if (widget.variable1 != null && widget.variable2 != null) {
+        print("init state");
+        print(widget.summaries);
+        setState(() {
+          keys = widget.summaries.first.keys.toList();
+          key = keys.first;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        if (widget.variable1 != null && widget.variable2 != null)
+          Text(
+            widget.variable1!.replaceAll("_", " "),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        if (keys.isNotEmpty)
+          DropdownButton<String>(
+              value: key,
+              onChanged: (value) {
+                setState(() {
+                  key = value;
+                });
+              },
+              items: keys.map<DropdownMenuItem<String>>((value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value ?? ""),
+                );
+              }).toList()),
+        Builder(builder: ((context) {
+          dynamic summary;
+          String? xTitle;
+
+          if (widget.variable1 != null && widget.variable2 != null) {
+            summary = [widget.summaries.first[key]];
+            xTitle = widget.variable2;
+            print(summary);
+          } else {
+            print(widget.summaries);
+            summary = [widget.summaries.first];
+          }
+
+          if (widget.visualizationType == VisualizationType.barChart) {
+            return SFBarChart(
+              variable1: widget.variable1,
+              variable2: widget.variable2,
+              summaries: summary,
+              xTitle: xTitle,
+            );
+          }
+          if (widget.visualizationType == VisualizationType.lineChart) {
+            return LineChart(
+              variable1: widget.variable1,
+              variable2: widget.variable2,
+              summaries: summary,
+            );
+          }
+
+          if (widget.visualizationType == VisualizationType.pieChart) {
+            return FLPieChart(
+              variable1: widget.variable1,
+              variable2: widget.variable2,
+              summaries: summary,
+            );
+          }
+
+          return const SizedBox();
+        }))
+      ],
     );
   }
 }

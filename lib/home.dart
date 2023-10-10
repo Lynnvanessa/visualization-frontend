@@ -24,10 +24,10 @@ class Home extends StatelessWidget {
                 alignment: Alignment.center,
                 margin: const EdgeInsets.only(top: 60, bottom: 20),
                 child: const Text(
-                  'CANCER IN KENYA',
+                  'CANCERS IN KENYA',
                   style: TextStyle(
                       color: Colors.black,
-                      fontSize: 32,
+                      fontSize: 30,
                       fontWeight: FontWeight.bold),
                 ),
               ),
@@ -35,7 +35,7 @@ class Home extends StatelessWidget {
                 child: Container(
                   alignment: Alignment.center,
                   child: const Text(
-                    '"You can be a victim of cancer or a survivor of cancer. It\'s a mindset."',
+                    'Welcome to Cancer Data Visualization App.\nClick the button below to get started',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
