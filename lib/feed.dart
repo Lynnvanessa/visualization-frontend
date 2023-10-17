@@ -11,7 +11,7 @@ class FeedScreen extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
-          title: const Text('Available Records'),
+          title: const Text('Available Datasets'),
         ),
         body: StreamBuilder(
           stream: FirebaseFirestore.instance.collection('records').snapshots(),

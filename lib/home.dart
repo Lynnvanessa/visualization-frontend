@@ -24,7 +24,7 @@ class Home extends StatelessWidget {
                 alignment: Alignment.center,
                 margin: const EdgeInsets.only(top: 60, bottom: 20),
                 child: const Text(
-                  'CANCERS IN KENYA',
+                  'CANCER IN KENYA',
                   style: TextStyle(
                       color: Colors.black,
                       fontSize: 30,

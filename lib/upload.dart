@@ -40,7 +40,7 @@ class _UploadFileState extends State<UploadFile> {
   void _uploadData() async {
     if (file == null) {
       Fluttertoast.showToast(
-        msg: 'Please select a file',
+        msg: 'Please select a Dataset',
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
       );
@@ -75,7 +75,7 @@ class _UploadFileState extends State<UploadFile> {
         file = null;
       });
       Fluttertoast.showToast(
-        msg: 'File uploaded successfully',
+        msg: 'Dataset uploaded successfully',
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         backgroundColor: Colors.green,
@@ -105,7 +105,7 @@ class _UploadFileState extends State<UploadFile> {
         leading: BackButton(
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Upload Record'),
+        title: const Text('Upload Dataset'),
       ),
       body: Container(
         margin: const EdgeInsets.all(10),
@@ -120,12 +120,12 @@ class _UploadFileState extends State<UploadFile> {
                     // inputs for file name, description, and file
                     TextFormField(
                       decoration: const InputDecoration(
-                        labelText: 'Record Name',
+                        labelText: 'Dataset Name',
                       ),
                       controller: fileNameController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter the record name';
+                          return 'Please enter the dataset name';
                         }
                         return null;
                       },
@@ -137,7 +137,7 @@ class _UploadFileState extends State<UploadFile> {
                       controller: descriptionController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter the record description';
+                          return 'Please enter the dataset description';
                         }
                         return null;
                       },
@@ -157,8 +157,8 @@ class _UploadFileState extends State<UploadFile> {
                         ),
                         child: Text(
                           file == null
-                              ? 'Select File'
-                              : 'File Selected\n${file!.path.split('/').last}',
+                              ? 'Select Dataset'
+                              : 'Dataset Selected\n${file!.path.split('/').last}',
                           style: const TextStyle(color: Colors.grey),
                         ),
                       ),
