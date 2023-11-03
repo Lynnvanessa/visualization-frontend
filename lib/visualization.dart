@@ -23,7 +23,32 @@ enum VisualizationType {
 
 @pragma("vm:entry-point")
 void getDoubleVariableSummary(SendPort sendPort) async {
+  // function to get age group from age string
+  String _getAgeGroup(String ageString) {
+    final age = int.tryParse(ageString.replaceAll(RegExp(r'[^0-9]'), ''));
+    if (age != null) {
+      if (age < 18) {
+        return 'Under 18';
+      } else if (age >= 18 && age < 30) {
+        return '18-29';
+      } else if (age >= 30 && age < 40) {
+        return '30-39';
+      } else if (age >= 40 && age < 50) {
+        return '40-49';
+      } else if (age >= 50 && age < 60) {
+        return '50-59';
+      } else if (age >= 60 && age < 70) {
+        return '60-69';
+      } else {
+        return '70+';
+      }
+    } else {
+      return 'Unknown';
+    }
+  }
+
   print("running getDoubleVariableSummary");
+  
   try {
     sendPort.send("Analyzing data...");
 
@@ -64,7 +89,59 @@ void getDoubleVariableSummary(SendPort sendPort) async {
             column2Values.where((element) => element == column2Value).length;
         column2Summary[column2Value.toString()] = column2Count;
       }
+      if (column1.toString().toLowerCase().contains('age')) {
+        final ageGroup = _getAgeGroup(value.toString());
+        if (summary[ageGroup] == null) {
+          summary[ageGroup] = column2Summary;
+        } else {
+          column2Summary.forEach((key, value) {
+            if (summary[ageGroup]![key] == null) {
+              summary[ageGroup]![key] = value;
+            } else {
+              summary[ageGroup]![key] = summary[ageGroup]![key]! + value;
+            }
+          });
+        }
+      } else {
       summary[value.toString()] = column2Summary;
+      }
+    }
+
+    if(column1.toString().toLowerCase().contains('age')) {
+      // replace key null with unknown
+      final nulls = summary[null];
+      if(nulls != null) {
+        summary.remove(null);
+        summary['Unknown'] = nulls;
+      }
+
+      // sort keys
+      final keys = summary.keys.toList();
+      final ageGroupIndexMap = <String, int>{
+        'Under 18': 0,
+        '18-29': 1,
+        '30-39': 2,
+        '40-49': 3,
+        '50-59': 4,
+        '60-69': 5,
+        '70+': 6,
+        'Unknown': 7,
+      };
+      keys.sort((a, b) {
+        final aIndex = ageGroupIndexMap[a];
+        final bIndex = ageGroupIndexMap[b];
+        if(aIndex == null || bIndex == null) {
+          return 0;
+        }
+        return aIndex.compareTo(bIndex);
+      });
+      // update summary
+      final newSummary = <String?, Map<String?, int>>{};
+      keys.forEach((key) {
+        newSummary[key] = summary[key]!;
+      });
+      summary.clear();
+      summary.addAll(newSummary);
     }
 
     sendPort.send(
@@ -1140,39 +1217,40 @@ class SFBarChart extends StatelessWidget {
     if (summaries.isEmpty) {
       return const SizedBox();
     }
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SfCartesianChart(
-        primaryXAxis: CategoryAxis(
-          labelRotation: 90,
-          title: AxisTitle(
-            text: (xTitle ?? variable1 ?? variable2 ?? "").replaceAll("_", ""),
-          ),
+    return SfCartesianChart(
+      primaryXAxis: CategoryAxis(
+        labelRotation: 90,
+        title: AxisTitle(
+          text: (xTitle ?? variable1 ?? variable2 ?? "").replaceAll("_", ""),
         ),
-        primaryYAxis: NumericAxis(
-          minimum: 0,
-          title: AxisTitle(
-            text: "Count",
-          ),
-        ),
-        series: <ChartSeries>[
-          ColumnSeries<dynamic, String?>(
-            dataSource: summaries.first.entries
-                .map((e) => {
-                      e.key: e.value,
-                    })
-                .toList(),
-            xValueMapper: (dynamic data, _) {
-              var value = data.keys.first;
-              if (value.length > 10) {
-                value = value.substring(0, 7) + "...";
-              }
-              return value;
-            },
-            yValueMapper: (dynamic data, _) => data.values.first,
-          )
-        ],
       ),
+      primaryYAxis: NumericAxis(
+        minimum: 0,
+        title: AxisTitle(
+          text: "Count",
+        ),
+      ),
+      zoomPanBehavior: ZoomPanBehavior(
+        enablePinching: true,
+        enablePanning: true,
+      ),
+      series: <ChartSeries>[
+        ColumnSeries<dynamic, String?>(
+          dataSource: summaries.first.entries
+              .map((e) => {
+                    e.key: e.value,
+                  })
+              .toList(),
+          xValueMapper: (dynamic data, _) {
+            var value = data.keys.first;
+            if (value.length > 10) {
+              value = value.substring(0, 7) + "...";
+            }
+            return value;
+          },
+          yValueMapper: (dynamic data, _) => data.values.first,
+        )
+      ],
     );
   }
 }
@@ -1196,6 +1274,10 @@ class LineChart extends StatelessWidget {
     }
 
     return SfCartesianChart(
+      zoomPanBehavior: ZoomPanBehavior(
+        enablePinching: true,
+        enablePanning: true,
+      ),
       primaryXAxis: CategoryAxis(
         title: AxisTitle(
           text: variable1 ?? variable2 ?? "",

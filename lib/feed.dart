@@ -30,21 +30,30 @@ class FeedScreen extends StatelessWidget {
 
             final data = snapshot.data as QuerySnapshot<Map<String, dynamic>>;
             return ListView.builder(
-              itemCount: data.size,
+              itemCount: data.size + 1,
               itemBuilder: (context, index) {
-                final doc = data.docs[index];
+                if (index == 0) {
+                  return ListTile(
+                    title: Text(
+                      'Select dataset to visualize',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  );
+                }
+                final doc = data.docs[index - 1];
                 final record = {...doc.data(), 'id': doc.id};
                 final timestamp = int.tryParse(record['timestamp'] ?? '');
                 String? formattedDate;
                 if (timestamp != null) {
-                  final date =
-                      DateTime.fromMillisecondsSinceEpoch(timestamp ?? 0);
+                  final date = DateTime.fromMillisecondsSinceEpoch(timestamp ?? 0);
                   formattedDate = DateFormat('dd-MM-yyyy').format(date);
                 }
                 return ListTile(
                   onTap: () {
-                    Navigator.pushNamed(context, 'visualization',
-                        arguments: record);
+                    Navigator.pushNamed(context, 'visualization', arguments: record);
                   },
                   title: Text(record['fileName']),
                   subtitle: Text(record['description']),
